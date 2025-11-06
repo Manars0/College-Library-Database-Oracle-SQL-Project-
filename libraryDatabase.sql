@@ -45,23 +45,26 @@ INSERT INTO Checkout VALUES (88888, 6333, 6, '09-01-2023');
 
 // Key SQL Queries
 // 1. Books purchased by customers
-SELECT CNAME, PHONE, TITLE
+SELECT CUST.CNAME AS "Customer Name", CUST.PHONE AS "Customer Phone", 
+CH.BOOK_ID ||'  -  '|| B.TITLE AS "Books purchased by the customer: " 
 FROM Customers
 JOIN Checkout USING (CUSTOMER_ID)
 JOIN Book USING (BOOK_ID);
 
 // 2. Newest checkout date
-SELECT TITLE, MAX(CHECKOUT)
+SELECT CH.BOOK_ID || ' - ' || B.TITLE AS "Books", MAX(CH.CHECKOUT) AS "Newest 
+Checkout Date" 
 FROM Checkout
 JOIN Book USING (BOOK_ID)
-GROUP BY TITLE;
+GROUP BY TITLE
+ORDER BY MAX(CHECKOUT) DESC;
 
 // 3. Count of checked-out books
-SELECT COUNT(DISTINCT BOOK_ID)
+SELECT COUNT(DISTINCT BOOK_ID) AS "checked out books" 
 FROM Checkout;
 
 // 4. Books never checked out
-SELECT TITLE
+SELECT TITLE AS "Book Title" 
 FROM Book
 LEFT JOIN Checkout USING (BOOK_ID)
 WHERE Checkout.BOOK_ID IS NULL;
@@ -74,7 +77,7 @@ GROUP BY TITLE
 ORDER BY COUNT(*) DESC;
 
 // 6. Authors and their books
-SELECT ANAME, TITLE
+SELECT ANAME AS Author_Name, TITLE AS Book_Title 
 FROM Authors
 JOIN Book USING (AUTHORS_ID);
 
