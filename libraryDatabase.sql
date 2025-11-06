@@ -1,0 +1,101 @@
+CREATE TABLE Customers (
+  CUSTOMER_ID NUMBER(10) PRIMARY KEY,
+  CNAME VARCHAR2(100) NOT NULL,
+  PHONE VARCHAR2(15) UNIQUE
+);
+
+CREATE TABLE Authors (
+  AUTHORS_ID NUMBER(10) PRIMARY KEY,
+  ANAME VARCHAR2(100) NOT NULL
+);
+
+CREATE TABLE Book (
+  BOOK_ID NUMBER(10) PRIMARY KEY,
+  TITLE VARCHAR2(100) UNIQUE,
+  AUTHORS_ID NUMBER(10),
+  CONSTRAINT FK_BOOK_AUTHORS_ID FOREIGN KEY (AUTHORS_ID)
+  REFERENCES Authors(AUTHORS_ID)
+);
+
+CREATE TABLE Checkout (
+  CHECKOUT_ID NUMBER(10) PRIMARY KEY,
+  CUSTOMER_ID NUMBER(10) REFERENCES Customers(CUSTOMER_ID),
+  BOOK_ID NUMBER(10) REFERENCES Book(BOOK_ID),
+  CHECKOUT DATE
+);
+INSERT INTO Customers VALUES (1111, 'SULTAN', '059999900');
+INSERT INTO Customers VALUES (2222, 'FAHADH', '057878787');
+INSERT INTO Customers VALUES (3333, 'MONA', '056808888');
+INSERT INTO Customers VALUES (4444, 'MESHAL', '054343444');
+
+INSERT INTO Authors VALUES (4441, 'Agatha Christie');
+INSERT INTO Authors VALUES (8881, 'George R. R. Martin');
+INSERT INTO Authors VALUES (5216, 'Ghazi Abdul Rahman Al Gosaibi');
+INSERT INTO Authors VALUES (1115, 'Prince Khalid bin Faisal Al Saud');
+
+INSERT INTO Book VALUES (1932, 'Endless Night', 4441);
+INSERT INTO Book VALUES (8181, 'Blood & Fire', 8881);
+INSERT INTO Book VALUES (6, 'A Life in Administration', 5216);
+INSERT INTO Book VALUES (5, 'Siaha Fi Fekr Al Amir', 1115);
+
+INSERT INTO Checkout VALUES (77707, 4444, 8181, '07-05-2023');
+INSERT INTO Checkout VALUES (55505, 3333, 1932, '06-03-2023');
+INSERT INTO Checkout VALUES (99999, 2121, 5, '01-04-2023');
+INSERT INTO Checkout VALUES (88888, 6333, 6, '09-01-2023');
+
+// Key SQL Queries
+// 1. Books purchased by customers
+SELECT CNAME, PHONE, TITLE
+FROM Customers
+JOIN Checkout USING (CUSTOMER_ID)
+JOIN Book USING (BOOK_ID);
+
+// 2. Newest checkout date
+SELECT TITLE, MAX(CHECKOUT)
+FROM Checkout
+JOIN Book USING (BOOK_ID)
+GROUP BY TITLE;
+
+// 3. Count of checked-out books
+SELECT COUNT(DISTINCT BOOK_ID)
+FROM Checkout;
+
+// 4. Books never checked out
+SELECT TITLE
+FROM Book
+LEFT JOIN Checkout USING (BOOK_ID)
+WHERE Checkout.BOOK_ID IS NULL;
+
+// 5. Most checked-out books
+SELECT TITLE, COUNT(*)
+FROM Checkout
+JOIN Book USING (BOOK_ID)
+GROUP BY TITLE
+ORDER BY COUNT(*) DESC;
+
+// 6. Authors and their books
+SELECT ANAME, TITLE
+FROM Authors
+JOIN Book USING (AUTHORS_ID);
+
+// 7. Average number of checkouts per book
+SELECT AVG(COUNT(*))
+FROM Checkout
+GROUP BY BOOK_ID;
+
+//8. Total books checked out in 2023
+SELECT COUNT(*)
+FROM Checkout
+WHERE EXTRACT(YEAR FROM CHECKOUT) = 2023;
+
+//View Creation
+CREATE VIEW Customer_Book_View AS
+SELECT C.CNAME AS "Customer Name",
+       C.PHONE AS "Phone Number",
+       B.TITLE AS "Book Title",
+       A.ANAME AS "Author Name",
+       CH.CHECKOUT AS "Checkout Date"
+FROM Customers C
+JOIN Checkout CH ON C.CUSTOMER_ID = CH.CUSTOMER_ID
+JOIN Book B ON B.BOOK_ID = CH.BOOK_ID
+JOIN Authors A ON A.AUTHORS_ID = B.AUTHORS_ID;
